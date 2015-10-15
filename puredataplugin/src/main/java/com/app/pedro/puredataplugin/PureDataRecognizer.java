@@ -1,6 +1,7 @@
 package com.app.pedro.puredataplugin;
 
 import android.content.Context;
+import android.os.Environment;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -41,6 +42,15 @@ public class PureDataRecognizer {
         touches = new ArrayList<>();
         intensityMap = new HashMap<>();
         nameMap = new HashMap<>();
+
+
+/*        File root = android.os.Environment.getExternalStorageDirectory();
+        File dir = new File(root.getAbsolutePath() + "/results");
+        File namesFile = new File(dir, "namesMapping.txt");
+        File templateFile = new File(dir, "templates.txt");
+        File intensityFile = new File(dir, "intensityResults.txt");
+
+        importFiles(namesFile,templateFile,intensityFile);*/
     }
 
     /**
@@ -53,6 +63,7 @@ public class PureDataRecognizer {
     public void addTouch(int x, int y) {
 
         Touch touch = new Touch(x,y);
+        //Log.e("TOUCH", touch.getTimestamp()+ "");
         touches.add(touch);
     }
 
@@ -67,7 +78,7 @@ public class PureDataRecognizer {
     public void addHit(float template, float velocity, float color, float intensity) {
 
         Hit hit = new Hit(template,velocity,color, intensity);
-
+       // Log.e("HIT", template + "");
         if(hits.size() > 9)
             hits.clear();
 
@@ -91,15 +102,11 @@ public class PureDataRecognizer {
         Hit h = hits.remove(hits.size()-1);
 
 
-
         long touchTs = t.getTimestamp();
         long hitTs = h.getTimestamp();
 
-        //Log.e("INFOOO:" , hitTs + " " + touchTs);
-        if(hitTs <= touchTs){
-        //if(hitTs <= touchTs + 200 && hitTs >= touchTs ){
-            //Log.e("INFO:", t.getLocation().first + " " + nameMap.get(h.getTemplate()));
-            //Log.e("Detected Hit!", "At " + hitTs + " " + touchTs);
+        Log.e("INFOOO:" , hitTs + " " + touchTs);
+         if(hitTs >= touchTs - 200 && hitTs <= touchTs){
             gesture = new Gesture(t, h);
             return gesture;
         }
@@ -122,14 +129,12 @@ public class PureDataRecognizer {
     }
 
     public boolean importFiles(File nameFile, File templateFile, File intensitiesFile) {
-
-
         int linesNameFile = countLines(nameFile);
         int linesTemplateFile = countLines(templateFile);
         int linesIntensitiesFile = countLines(intensitiesFile);
 
         Log.e("Lines", linesNameFile + " " + linesIntensitiesFile + " " + linesTemplateFile);
-        if (!(linesNameFile == linesTemplateFile && linesTemplateFile == linesIntensitiesFile)) {
+        if (!(linesNameFile == linesTemplateFile /*&& linesTemplateFile == linesIntensitiesFile*/)) {
 
             return false;
         }
@@ -310,7 +315,7 @@ public class PureDataRecognizer {
         intensityMap.put(template, resultFloats);
     }
 
-    public HashMap getNames() {
+    public HashMap<Integer,String> getNames() {
         return nameMap;
     }
 

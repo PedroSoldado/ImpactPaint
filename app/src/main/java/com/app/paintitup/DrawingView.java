@@ -75,11 +75,10 @@ public class DrawingView extends View
         float touchX = event.getX();
         float touchY = event.getY();
 
-        boolean test = true;
-
         if(!drawCircles) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
+                    drawPath.reset();
                     drawPath.moveTo(touchX, touchY);
                     break;
                 case MotionEvent.ACTION_MOVE:
@@ -96,7 +95,10 @@ public class DrawingView extends View
         else {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    drawPath.addCircle(touchX, touchY,100, Path.Direction.CW);
+                    drawPath.reset();
+                    drawPath.addCircle(touchX, touchY,80, Path.Direction.CW);
+                    break;
+                case MotionEvent.ACTION_UP:
                     drawCanvas.drawPath(drawPath, drawPaint);
                     drawPath.reset();
                     break;
@@ -104,6 +106,7 @@ public class DrawingView extends View
                     return false;
             }
         }
+
 
         invalidate();
         return true;
@@ -138,6 +141,9 @@ public class DrawingView extends View
         invalidate();
     }
 
+    public boolean getDrawCircles(){
+        return drawCircles;
+    }
     public void setDrawCircles(boolean value){
         drawCircles = value;
     }

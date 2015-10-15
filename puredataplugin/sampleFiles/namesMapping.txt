@@ -1,0 +1,3 @@
+0	tap
+1	nail
+2	knock

@@ -36,36 +36,44 @@ public class MainActivity extends Activity implements OnClickListener {
     private DrawingView drawView;
     private ImageButton currPaint,drawBtn, eraseBtn, newBtn, saveBtn;
     private float smallBrush, mediumBrush, largeBrush;
+    boolean firstTouch;
 
     public static PureDataRecognizer recognizer;
+    public static PureData pd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        firstTouch = true;
 
         recognizer = new PureDataRecognizer(getApplicationContext());
-
+        pd = new PureData(getApplicationContext());
         initPaint();
 
 
-        recognizer.getPD().getMyDispatcher().addListener("bonk-cooked", new PdListener.Adapter() {
+        pd.getMyDispatcher().addListener("bonk-cooked", new PdListener.Adapter() {
             @Override
             public void receiveList(String source, Object... objects) {
                 String bonkOutput;
 
-                int template = (int) Double.parseDouble(objects[0].toString());
-                float velocity = Float.parseFloat(objects[1].toString());
-                float colorTemperature = Float.parseFloat(objects[2].toString());
-                float loudness = Float.parseFloat(objects[3].toString());
-                float sigmund = Float.parseFloat(objects[4].toString());
+                try {
+                    int template = (int) Double.parseDouble(objects[0].toString());
+                    float velocity = Float.parseFloat(objects[1].toString());
+                    float colorTemperature = Float.parseFloat(objects[2].toString());
+                    float loudness = Float.parseFloat(objects[3].toString());
+                    float sigmund = Float.parseFloat(objects[4].toString());
 
-                recognizer.addHit(template, velocity, colorTemperature, loudness);
 
+                    recognizer.addHit(template, velocity, colorTemperature, loudness);
+                    Log.e("HIT!", template + "");
 /*                if (recognizer.detectHit() != null) {
 
                     Log.e("YEY", "YAY");
                 }*/
+                }catch(NullPointerException e){
+
+                }
             }
 
 
@@ -98,7 +106,6 @@ public class MainActivity extends Activity implements OnClickListener {
         currPaint.setImageDrawable(getResources().getDrawable(R.drawable.paint_pressed));
     }
 
-    boolean firstTouch = true;
     public boolean dispatchTouchEvent (MotionEvent event){
         super.dispatchTouchEvent(event);
         int x = (int)event.getX();
@@ -115,25 +122,42 @@ public class MainActivity extends Activity implements OnClickListener {
             firstTouch = false;
         }
 
-        if(event.getAction() == MotionEvent.ACTION_UP){
+        if(event.getAction() == MotionEvent.ACTION_DOWN){
             recognizer.addTouch(x,y);
+            Log.e("CIRCLES? " , drawView.getDrawCircles() + "");
         }
 
-        //Gesture g = recognizer.detectHit();
-        String gesture = recognizer.getGesture().toUpperCase();
-        Log.e("Gesture: ", gesture);
+        String gesture = recognizer.getGesture();
 
-        TextView text = (TextView) findViewById(R.id.gestureView);
-        if(!("NULL".equals(gesture)))
+        if(!gesture.equals(null))
+            gesture = gesture.toUpperCase();
+
+        if(!("NULL".equals(gesture))) {
+            TextView text = (TextView) findViewById(R.id.gestureView);
             text.setText(gesture);
+        }
+
+        LinearLayout paintLayout = (LinearLayout)findViewById(R.id.paint_colors);
+
 
         switch(gesture){
-            case "TAP": drawView.setColor("#000000"); break;
+            case  "TAP":
+                drawView.setDrawCircles(false);
+                currPaint = (ImageButton) paintLayout.getChildAt(0);
+                currPaint.setImageDrawable(getResources().getDrawable(R.drawable.paint_pressed));
+                drawView.setColor("#000000"); break;
             case "KNOCK":
-                
-                //drawView.setColor("#FFFFFFFF");
+                if(drawView.getDrawCircles()) {
+                    drawView.setDrawCircles(false);
+                }
+                else {
+                    drawView.setDrawCircles(true);
+                }
                 break;
-            case "NAIL": drawView.setColor("#FFFF00"); break;
+            case "NAIL": drawView.setColor("#FFFFFFFF"); break;
+            case "STYLUS": break;
+
+            default: break;
         }
 
         //Log.e("Gesture detected:", gesture);
@@ -141,7 +165,6 @@ public class MainActivity extends Activity implements OnClickListener {
             g.
             Log.e("DETECTEEEED", "HERE");
         }*/
-
         return true;
     }
 
